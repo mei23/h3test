@@ -1,7 +1,6 @@
 import { createServer } from 'http';
 import * as h3 from 'h3';
 import * as accepts from 'accepts';
-import { inspect } from 'util';
 
 async function main() {
 	const app = h3.createApp();
@@ -35,10 +34,10 @@ async function main() {
 		// event.res.end();
 	}));
 
-	router.get('/param/:name', h3.eventHandler(async event => {
+	// パラメーター
+	router.get('/params/:name', h3.eventHandler(async event => {
 		return { name: event.context.params.name };
 	}));
-
 
 	const ACTIVITY_JSON = 'application/activity+json; charset=utf-8';
 	const LD_JSON = 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"; charset=utf-8';
@@ -50,35 +49,32 @@ async function main() {
 		return isAp;
 	};
 
-	const pickParam = (url: string | undefined) => {
-		if (url == null) return url;
-		const m = url.match(/^[/]([^/]+)/);
-		return m?.[1];
-	}
+	// Accept: AP で返したいもの
+	const apRouter = h3.createRouter();
+	apRouter.get('/users/:userId', h3.eventHandler(async event => {
+		event.res.setHeader('Vary', 'Accept');
+		return { name: event.context.params.userId };
+	}));
 
 	app.use({
-		route: '/users/',	// 非Routerではparam使えない
 		match: isAp,
-		handler: h3.eventHandler(async event => {
-			event.res.setHeader('Vary', 'Accept');
-			h3.assertMethod(event, 'GET');
-			const userId = pickParam(event.req.url);
-			return `AP request for ${userId}\n`;
-		}),
+		handler: apRouter.handler,
 	});
 
-	app.use({
-		route: '/users/',
-		handler: h3.eventHandler(async event => {
-			event.res.setHeader('Vary', 'Accept');
-			h3.assertMethod(event, 'GET');
-			const userId = pickParam(event.req.url);
-			return `Non AP request for ${userId}\n`;
-		}),
-	});
+	// Accept: AP以外 で返したいもの
+	router.get('/users/:userId', h3.eventHandler(async event => {
+		event.res.setHeader('Vary', 'Accept');
+		return `Non AP request for ${event.context.params.userId}`;
+	}));
 
+	// どっちでもいいもの
+	router.get('/users/:userId/outbox', h3.eventHandler(async event => {
+		return `outbox request for ${event.context.params.userId}`;
+	}));
 
 	app.use(router);
+
+	// TODO: JSON受け取り, CORS, 特定スコープ全体になにかを適用する方法
 
 	// listen
 	const server = createServer(h3.toNodeListener(app));
