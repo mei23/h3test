@@ -14,7 +14,7 @@ app.use(h3.fromNodeMiddleware(cors()));
 
 // デフォルトヘッダーとか
 app.use(h3.eventHandler(async event => {
-	event.res.setHeader('Cache-Control', 'private, max-age=0, must-revalidate');
+	h3.setHeader(event, 'Cache-Control', 'private, max-age=0, must-revalidate');
 }));
 
 router.get('/endpoint', h3.eventHandler(async event => {

@@ -16,7 +16,7 @@ async function main() {
 
 	// テキストを送る
 	router.get('/text', h3.eventHandler(async event => {
-		event.res.setHeader('Content-Type', 'text/plain; charset=utf-8');	// charsetは付かないから指定する
+		h3.setHeader(event, 'Content-Type', 'text/plain; charset=utf-8');	// charsetは付かないから指定する
 		return 'あ';
 	}));
 
@@ -52,13 +52,14 @@ async function main() {
 		if (!event) throw 'u';
 		const accepted = accepts(event.req).type(['html', ACTIVITY_JSON, LD_JSON]);
 		const isAp = typeof accepted === 'string' && !accepted.match(/html/);
+		// ここでappendHeaderすると全部に入ってしまう
 		return isAp;
 	};
 
 	// Accept: AP で返したいもの
 	const apRouter = h3.createRouter();
 	apRouter.get('/users/:userId', h3.eventHandler(async event => {
-		event.res.setHeader('Vary', 'Accept');
+		h3.appendHeader(event, 'Vary', 'Accept');
 		return { name: event.context.params.userId };
 	}));
 
@@ -69,7 +70,7 @@ async function main() {
 
 	// Accept: AP以外 で返したいもの
 	router.get('/users/:userId', h3.eventHandler(async event => {
-		event.res.setHeader('Vary', 'Accept');
+		h3.appendHeader(event, 'Vary', 'Accept');
 		return `Non AP request for ${event.context.params.userId}`;
 	}));
 
@@ -81,8 +82,6 @@ async function main() {
 	app.use(router);
 
 	app.use('/api', api.handler);
-
-	// TODO: JSON受け取り, CORS, 特定スコープ全体になにかを適用する方法
 
 	// listen
 	const server = createServer(h3.toNodeListener(app));
