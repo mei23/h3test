@@ -6,6 +6,11 @@ async function main() {
 	const app = h3.createApp();
 	const router = h3.createRouter();
 
+	// handlerで何も返さなければ次に引き継ぐ。つまりexpressで言うnext()
+	app.use(h3.eventHandler(async event => {
+		console.log(`Request ${event.req.url}`);
+	}));
+
 	// HEADの自動Acceptはない？
 
 	// テキストを送る
