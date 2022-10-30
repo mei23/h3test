@@ -1,6 +1,7 @@
 import { createServer } from 'http';
 import * as h3 from 'h3';
 import * as accepts from 'accepts';
+import * as serveStatic from 'serve-static';
 import api from './api';
 
 async function main() {
@@ -87,6 +88,11 @@ async function main() {
 	app.use(router);
 
 	app.use('/api', api.handler);
+
+	// static file
+	app.use('/static', h3.fromNodeMiddleware(serveStatic(`${__dirname}/../static`, {
+		maxAge: 300 * 1000
+	})));
 
 	// listen
 	const server = createServer(h3.toNodeListener(app));
