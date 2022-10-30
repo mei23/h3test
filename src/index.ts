@@ -1,6 +1,7 @@
 import { createServer } from 'http';
 import * as h3 from 'h3';
 import * as accepts from 'accepts';
+import api from './api';
 
 async function main() {
 	const app = h3.createApp();
@@ -78,6 +79,8 @@ async function main() {
 	}));
 
 	app.use(router);
+
+	app.use('/api', api.handler);
 
 	// TODO: JSON受け取り, CORS, 特定スコープ全体になにかを適用する方法
 
