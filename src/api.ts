@@ -36,7 +36,7 @@ router.post('/post', h3.eventHandler(async event => {
 	// ペイロードなしなら undefined が返る
 	// なお、formdataでも受け入れる
 
-	// また、これだけでクエリ文字列の取得とバリデートをして Record<string, unknown>　にしてくれる。
+	// これだけでクエリ文字列の取得とバリデートをして Record<string, unknown>　にしてくれる。
 	// エラーは勝手に400を返してくれる
 	// これはtypebox形式だけど、JSON Schema にも出来る。でもtypeboxで定義したほうが使いやすいかも。
 	const body = await validateBody(event, Type.Record(Type.String(), Type.Unknown()));
