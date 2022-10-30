@@ -16,7 +16,7 @@ async function main() {
 
 	// テキストを送る
 	router.get('/text', h3.eventHandler(async event => {
-		h3.setHeader(event, 'Content-Type', 'text/plain; charset=utf-8');	// charsetは付かないから指定する
+		h3.setResponseHeader(event, 'Content-Type', 'text/plain; charset=utf-8');	// charsetは付かないから指定する
 		return 'あ';
 	}));
 
@@ -28,8 +28,13 @@ async function main() {
 
 	// 4xxを送る
 	router.get('/403', h3.eventHandler(async event => {
-		event.res.statusCode = 403;
-		return 'a';	// HTML charsetなしになる
+		throw h3.createError({
+			statusCode: 403,
+			statusMessage: 'Forbidden',
+			data: {
+				message: 'message'
+			}
+		})
 	}));
 
 	// 204を送る
@@ -59,7 +64,7 @@ async function main() {
 	// Accept: AP で返したいもの
 	const apRouter = h3.createRouter();
 	apRouter.get('/users/:userId', h3.eventHandler(async event => {
-		h3.appendHeader(event, 'Vary', 'Accept');
+		h3.appendResponseHeader(event, 'Vary', 'Accept');
 		return { name: event.context.params.userId };
 	}));
 
@@ -70,7 +75,7 @@ async function main() {
 
 	// Accept: AP以外 で返したいもの
 	router.get('/users/:userId', h3.eventHandler(async event => {
-		h3.appendHeader(event, 'Vary', 'Accept');
+		h3.appendResponseHeader(event, 'Vary', 'Accept');
 		return `Non AP request for ${event.context.params.userId}`;
 	}));
 
